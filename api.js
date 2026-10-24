@@ -7,6 +7,12 @@ const API_URL = "https://jsonplaceholder.typicode.com/posts";
 const loadBtn = document.getElementById("load-btn");
 const statusEl = document.getElementById("status");
 const notesList = document.getElementById("notes-list");
+const noteForm = document.getElementById("note-form");
+const titleInput = document.getElementById("title-input");
+const bodyInput = document.getElementById("body-input");
+const submitBtn = document.getElementById("submit-btn");
+
+const MAX_TITLE_LENGTH = 100;
 
 // ---------- Helpers: status messages and busy state ----------
 
@@ -20,6 +26,7 @@ function setStatus(message, type) {
 // click twice and send the same request again.
 function setBusy(isBusy) {
   loadBtn.disabled = isBusy;
+  submitBtn.disabled = isBusy;
 }
 
 // Turn a technical error into a message a normal person can understand.
@@ -119,6 +126,64 @@ async function loadNotes() {
     setBusy(false);
   }
 }
+
+// ---------- POST: create a note ----------
+
+// Returns a message if the title is not allowed, or "" if it is fine.
+function validateTitle(title) {
+  if (title === "") {
+    return "Please enter a title for your note.";
+  }
+  if (title.length > MAX_TITLE_LENGTH) {
+    return "The title is too long (" + title.length + " characters). The maximum is " +
+      MAX_TITLE_LENGTH + ".";
+  }
+  return "";
+}
+
+function createNote(title, body) {
+  return request(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=UTF-8" },
+    body: JSON.stringify({ title: title, body: body, userId: 1 })
+  });
+}
+
+async function handleSubmit(event) {
+  event.preventDefault();   // stop the browser from reloading the page
+
+  const title = titleInput.value.trim();
+  const body = bodyInput.value.trim();
+
+  const problem = validateTitle(title);
+  if (problem) {
+    setStatus(problem, "error");
+    titleInput.focus();
+    return;
+  }
+
+  setBusy(true);
+  setStatus("Saving your note...", "loading");
+
+  try {
+    const result = await createNote(title, body);
+    const note = result.data;
+
+    // isLocal = true: this note only exists in the browser (see handleDelete).
+    notesList.prepend(createNoteItem(note, true));
+    updateEmptyState();
+    noteForm.reset();
+
+    setStatus("Note created (status " + result.status + ", id " + note.id + ").", "success");
+  } catch (error) {
+    console.error(error);
+    setStatus(friendlyError(error, "save your note"), "error");
+  } finally {
+    setBusy(false);
+  }
+}
+
+noteForm.addEventListener("submit", handleSubmit);
 
 loadBtn.addEventListener("click", loadNotes);
 updateEmptyState();
