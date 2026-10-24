@@ -1,0 +1,103 @@
+:root {
+  --bg: #f5f5f5;
+  --text: #222222;
+  --card: #ffffff;
+  --border: #c8c8c8;
+  --muted: #666666;
+  --button-bg: #2563eb;
+  --button-text: #ffffff;
+  --loading-bg: #e8f0fe;
+  --loading-text: #1a4fb4;
+  --success-bg: #e6f4ea;
+  --success-text: #1e6b34;
+  --error-bg: #fdecea;
+  --error-text: #b3261e;
+  --danger: #b3261e;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  line-height: 1.5;
+  margin: 0;
+  padding: 24px 16px;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+button {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Status message: a different look for loading, success and error */
+#status {
+  min-height: 1.5em;
+  margin: 16px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+#status.loading {
+  background: var(--loading-bg);
+  color: var(--loading-text);
+}
+
+#status.success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+#status.error {
+  background: var(--error-bg);
+  color: var(--error-text);
+  font-weight: bold;
+}
+
+/* Notes list */
+#notes-list {
+  list-style: none;
+  padding: 0;
+}
+
+.note {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.note h3 {
+  margin: 0 0 6px;
+}
+
+.note p {
+  margin: 0 0 10px;
+  white-space: pre-wrap;
+}
+
+.empty {
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+  padding: 16px;
+}
