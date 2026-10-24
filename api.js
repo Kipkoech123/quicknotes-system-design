@@ -27,6 +27,10 @@ function setStatus(message, type) {
 function setBusy(isBusy) {
   loadBtn.disabled = isBusy;
   submitBtn.disabled = isBusy;
+  const deleteButtons = notesList.querySelectorAll(".delete-btn");
+  for (const button of deleteButtons) {
+    button.disabled = isBusy;
+  }
 }
 
 // Turn a technical error into a message a normal person can understand.
@@ -74,6 +78,15 @@ function createNoteItem(note, isLocal) {
   body.textContent = note.body || "";
 
   item.append(heading, body);
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "delete-btn";
+  deleteBtn.textContent = "Delete";
+  deleteBtn.addEventListener("click", function () {
+    handleDelete(note, item, isLocal);
+  });
+  item.append(deleteBtn);
   return item;
 }
 
@@ -184,6 +197,53 @@ async function handleSubmit(event) {
 }
 
 noteForm.addEventListener("submit", handleSubmit);
+
+// ---------- DELETE: remove a note ----------
+
+function deleteNote(id) {
+  return request(API_URL + "/" + id, { method: "DELETE" });
+}
+
+// IMPORTANT: JSONPlaceholder is a practice API. It pretends to save things
+// but never really stores them. When we POST a note it answers "201, id 101"
+// but note 101 does not exist on the server, so a later GET would never
+// return it. Our approach:
+//   1. The page is the source of truth for what the user sees. We send the
+//      DELETE request to the server, and when the server says it worked we
+//      remove the note from the list.
+//   2. A note created in this browser (isLocal) never really existed on the
+//      server. If the server answers 404 for it, that means "already gone",
+//      so we still remove it from the page instead of showing an error.
+//   3. We remove the exact list item we clicked (not "the item with this id"),
+//      because every new note gets the same fake id 101.
+// A real API would store the note, so DELETE would really remove it.
+async function handleDelete(note, item, isLocal) {
+  setBusy(true);
+  setStatus("Deleting note...", "loading");
+
+  try {
+    let statusCode;
+    try {
+      const result = await deleteNote(note.id);
+      statusCode = result.status;
+    } catch (error) {
+      if (isLocal && error.status === 404) {
+        statusCode = 404;   // never existed on the server: fine to remove
+      } else {
+        throw error;
+      }
+    }
+
+    item.remove();
+    updateEmptyState();
+    setStatus("Note deleted (status " + statusCode + ").", "success");
+  } catch (error) {
+    console.error(error);
+    setStatus(friendlyError(error, "delete that note"), "error");
+  } finally {
+    setBusy(false);
+  }
+}
 
 loadBtn.addEventListener("click", loadNotes);
 updateEmptyState();

@@ -137,3 +137,7 @@ textarea {
 #submit-btn {
   margin-top: 14px;
 }
+
+.delete-btn {
+  background: var(--danger);
+}
